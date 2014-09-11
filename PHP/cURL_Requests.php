@@ -13,10 +13,18 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $field);
 
 $try = 0; //Счетчик количества повторов получения данных
+$baseT = 10; // базовый таймаут в секундах
+
 do {
   $data = curl_exec($ch); //Делаем запрос к API
   $response = json_decode($data, true); //Декодирует JSON строку
   $try++; // Увеличиваем значение счетчика
+  
+  if ((!empty(curl_errno($ch))) || (empty($response)))
+  {
+    sleep( $baseT + (($try-1*5))); //если ошибка, увелиить интервал
+  }
+  
 }  while (curl_errno($ch) and $try < 10 and $response['status'] != 'ok'); //Проверяем что запрос к апи успешно прошел, и устанавливаем лимит не более 10 запросов к API
 
 curl_close($ch); //Завершает сеанс cURL
