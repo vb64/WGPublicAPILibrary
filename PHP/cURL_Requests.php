@@ -12,7 +12,13 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $field);
 
-$response = json_decode(curl_exec($ch), true); //Декодирует JSON строку
+$try = 0; //Счетчик количества повторов получения данных
+do {
+  $data = curl_exec($ch); //Делаем запрос к API
+  $response = json_decode($data, true); //Декодирует JSON строку
+  $try++; // Увеличиваем значение счетчика
+}  while (curl_errno($ch) and $try < 10 and $response['status'] != 'ok'); //Проверяем что запрос к апи успешно прошел, и устанавливаем лимит не более 10 запросов к API
+
 curl_close($ch); //Завершает сеанс cURL
 
 foreach ($response as $key => $value) {
