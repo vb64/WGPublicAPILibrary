@@ -20,6 +20,20 @@ class SIGN:
     REGULAR = 288633362
     COMP2   = 14
 
+battleType = [
+    "???", 
+    "public", 
+    "training", 
+    "tankcompany", 
+    "???", 
+    "clanwar", 
+    "???", 
+    "742",
+    "???", 
+    "???", 
+    "stronghold",
+]
+
 class File(object):
 
     def __init__(self, input_file):
@@ -58,25 +72,82 @@ class File(object):
             # save as data at battle finish
             self.json_battle_result = json.loads(input_file.read(block_len))
 
-if __name__ == "__main__":
+class Data(File):
+
+    def dump_json_data(self):
+
+        ret = "\nInitial battle data:\n"
+        ret = "%s%s" % (ret, json.dumps(self.json_battle_initial, indent=2))
+        if self.json_battle_result:
+            ret = "%s%s" % (ret, "\nResult battle data:\n")
+            ret = "%s%s" % (ret, json.dumps(self.json_battle_result, indent=2))
+        return ret
+
+    def dump_common_info(self):
+
+        j = self.json_battle_initial
+        ret = "Version: %s\n" % j['clientVersionFromExe']
+        ret = "%s%s" % (ret, "Date: %s\n" % j['dateTime'])
+        ret = "%s%s" % (ret, "Map: %s\n" % j['mapName'])
+        ret = "%s%s" % (ret, "Player: %s on tank '%s'\n" % (j['playerName'], j['playerVehicle']))
+
+        b = 'unknown'
+        if j['battleType'] < len(battleType):
+            b = battleType[j['battleType']]
+
+        ret = "%s%s" % (ret, "Battle: %s (%s)\n" % (b, j['gameplayID']))
+        if not self.json_battle_result:
+            ret = "%s%s" % (ret, "Record NOT completed\n")
+            return ret
+
+        j = self.json_battle_result
+        ret = "%s%s" % (ret, "Winner Team: %s\n" % j[0]['common']['winnerTeam'])
+        return ret
+
+    def dump_teams(self):
+
+        team1 = []
+        team2 = []
+        j = self.json_battle_initial
+
+        for uid, data in j['vehicles'].items():
+            lst = (data['name'], data['clanAbbrev'], data['vehicleType'])
+            if data['team'] == 1:
+                team1.append(lst)
+            else:
+                team2.append(lst)
+
+        ret = ""
+        for num, team in [(1, team1), (2, team2)]:
+            ret = "%s%s" % (ret, "\nTeam%d (%d):\n\n" % (num, len(team)))
+            for itm in team:
+                cl = ""
+                if itm[1]:
+                    cl = " [%s]" % itm[1]
+                ret = "%s%s" % (ret, "%s%s\n" % (itm[0], cl))
+
+        return ret
+
+def main():
+
     import sys
+
     if len(sys.argv) > 1:
 
         try:
-
-            rep = File(open(sys.argv[1], 'rb'))
-            if rep.json_battle_result:
-                print "Record completed"
-            else:
-                print "Record NOT completed"
-            if (len(sys.argv) > 2) and sys.argv[2] == 'dump':
-                print "\nInitial battle data:\n"
-                print json.dumps(rep.json_battle_initial, indent=2)
-                if rep.json_battle_result:
-                    print "\nResult battle data:\n"
-                    print json.dumps(rep.json_battle_result, indent=2)
-
+            rep = Data(open(sys.argv[1], 'rb'))
         except Exception, e:
             print "Error: %s" % e
+            return
+
+        print rep.dump_common_info()
+        print rep.dump_teams()
+
+        if (len(sys.argv) > 2) and sys.argv[2] == 'dump':
+            print rep.dump_json_data()
+
     else:
         print "Usage:\npython replay.py filename.wotreplay [dump]"
+
+if __name__ == "__main__":
+    main()
