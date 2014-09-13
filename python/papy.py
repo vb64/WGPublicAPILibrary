@@ -9,6 +9,10 @@ based on: https://ru.wargaming.net/support/Knowledgebase/Article/View/713/25/pri
 >>> api = papi.Session(papi.Server.RU, 'demo')
 >>> api.fetch('wot/account/list', 'search=%s&limit=1' % 'Serb')
 [{u'nickname': u'SerB', u'id': None, u'account_id': 461}]
+>>> api.isClanDeleted(90)
+True
+>>> api.isClanDeleted(1)
+False
 
 """
 
@@ -90,6 +94,25 @@ class Session(object):
             time.sleep(DELAY_SECONDS)
 
         raise Error(repr(resp))
+
+    # trick for check for deleted clan
+    def isClanDeleted(self, clan_id):
+        page = Page("http://api.%s/%s/?application_id=%s&%s" % (self.api_host, 'wot/clan/provinces', self.api_key, 'clan_id=%d' % clan_id))
+        count = 0
+
+        while count < NUM_RETRIES:
+
+            r = json.loads(page.fetch())
+            if r['status'] == 'ok':
+                return False
+            elif (r['status'] == 'error') and (r['error']['code'] == 404) and (r['error']['message'] == 'CLAN_NOT_FOUND'):
+                return True
+
+            count += 1
+            logging.info("### PAPI retry %d %s" % (count, page.url))
+            time.sleep(DELAY_SECONDS)
+
+        return False
 
 if __name__ == "__main__":
     import doctest
