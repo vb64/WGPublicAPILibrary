@@ -10,5 +10,5 @@
 
 > api.fetch('wot/account/list', 'search=Serb&limit=1')
 
-Дополнительный метод _isClanDeleted(ID_клана)_, проверяет существование клана с заданным айди, 
+Дополнительный метод _isClanDeleted_(ID_клана), проверяет существование клана с заданным айди, 
 т.к. PAPI [не предоставляет надежных штатных механизмов](https://github.com/OpenWGPAPI/WGPublicAPILibrary/issues/2 ) для решения этой задачи. 
