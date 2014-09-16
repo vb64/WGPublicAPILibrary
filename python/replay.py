@@ -51,7 +51,7 @@ class File(object):
         if self.sign == SIGN.REGULAR:
             pass
         elif self.sign == SIGN.COMP2:
-            raise Exception("It's wotreplay file, but this format is unknown")
+            raise Exception("Legacy format of wotreplay file don't supported. Currently...")
         else:
             raise Exception("Looks like not wotreplay file, sign: %d" % self.sign)
       
