@@ -26,7 +26,8 @@ class Server:
   EU   = 'worldoftanks.eu'
   COM  = 'worldoftanks.com'
   SEA  = 'worldoftanks.asia'
-
+  KR   = 'worldoftanks.kr'
+  
 class Error(Exception):
     pass
 
