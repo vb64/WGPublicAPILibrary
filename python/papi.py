@@ -13,7 +13,10 @@ based on: https://ru.wargaming.net/support/Knowledgebase/Article/View/713/25/pri
 True
 >>> api.isClanDeleted(1)
 False
+>>> api.getPlayerID('sss___sss__Serb')
 
+>>> api.getPlayerID('Serb')
+'461'
 """
 
 import urllib2, json, logging, time
@@ -117,13 +120,11 @@ class Session(object):
     
     def getPlayerID(self, name):
         """getPlayerID(name)\nReturn player ID by name"""
-        page = self.fetch('wot/account/list/', 'search=%s&fields=account_id&limit=1' % name)
+        page = self.fetch('wot/account/list', 'search=%s&fields=account_id&limit=1' % name)
 
         if page:
-            player_id = str(page[0]['account_id'])
-            return player_id
-        else:
-            return None
+            return str(page[0]['account_id'])
+        return None
 
 if __name__ == "__main__":
     import doctest
