@@ -114,6 +114,16 @@ class Session(object):
             time.sleep(DELAY_SECONDS)
 
         return False
+    
+    def getPlayerID(self, name):
+        """getPlayerID(name)\nReturn player ID by name"""
+        page = self.fetch('wot/account/list/', 'search=%s&fields=account_id&limit=1' % name)
+
+        if page:
+            player_id = str(page[0]['account_id'])
+            return player_id
+        else:
+            return None
 
 if __name__ == "__main__":
     import doctest
