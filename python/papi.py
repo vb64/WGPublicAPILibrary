@@ -19,7 +19,7 @@ False
 '461'
 """
 
-import urllib2, json, logging, time
+import urllib, urllib2, json, logging, time
 
 NUM_RETRIES = 5
 DELAY_SECONDS = 5
@@ -101,6 +101,7 @@ class Session(object):
 
     # trick for check for deleted clan
     def isClanDeleted(self, clan_id):
+        """isClanDeleted(clan_id)\nReturn check for deleted clan"""
         page = Page("http://api.%s/%s/?application_id=%s&%s" % (self.api_host, 'wot/clan/provinces', self.api_key, 'clan_id=%d' % clan_id))
         count = 0
 
@@ -117,10 +118,31 @@ class Session(object):
             time.sleep(DELAY_SECONDS)
 
         return False
-    
-    def getPlayerID(self, name):
-        """getPlayerID(name)\nReturn player ID by name"""
-        page = self.fetch('wot/account/list', 'search=%s&fields=account_id&limit=1' % name)
+
+class Accounts(object):
+
+    def __init__(self, api):
+        self.api = api
+
+    def getAccountList(self, params = {}):
+        """getAccountList(params)\nMethod returns partial list of players. The list is filtered by initial characters of user name and sorted alphabetically."""
+        return self.api.fetch('wot/account/list', urllib.urlencode(params))
+
+    def getAccountInfo(self, params = {}):
+        """getAccountInfo(params)\nMethod returns player details."""
+        return self.api.fetch('wot/account/info', urllib.urlencode(params))
+
+    def getAccountTanks(self, params = {}):
+        """getAccountTanks(params)\nMethod returns details on player's vehicles."""
+        return self.api.fetch('wot/account/tanks', urllib.urlencode(params))
+
+    def getAccountAchievements(self, params = {}):
+        """getAccountAchievements(params)\nThis method returns players' achievement details."""
+        return self.api.fetch('wot/account/achievements', urllib.urlencode(params))
+
+    def getAccountID(self, name):
+        """getAccountID(name)\nMethod returns account ID by name."""
+        page = self.getAccountList({'search': name, 'fields': 'account_id', 'limit': '1'})
 
         if page:
             return str(page[0]['account_id'])
