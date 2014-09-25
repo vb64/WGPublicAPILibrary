@@ -17,9 +17,6 @@ False
 
 import urllib2, json, logging, time
 
-NUM_RETRIES = 5
-DELAY_SECONDS = 5
-
 class Server:
   RU   = 'worldoftanks.ru'
   EU   = 'worldoftanks.eu'
@@ -49,13 +46,13 @@ class Page(object):
         #    delim = '&'
         #self.url = "%s%s%s" % (url, delim, str(random.random()))  
   
-    def fetch(self):
+    def fetch(self, retries=5, delays=5):
   
         last_exception = None
         count = 0
         is_ok = False
       
-        while (not is_ok) and (count < NUM_RETRIES):
+        while (not is_ok) and (count < retries):
       
             try:
                 response = urllib2.urlopen(self.url, None, 30)
@@ -63,7 +60,7 @@ class Page(object):
             except Exception as e:
                 last_exception = e
                 count += 1
-                time.sleep(DELAY_SECONDS)
+                time.sleep(delays)
       
         if not is_ok:
             raise last_exception
@@ -78,20 +75,24 @@ class Page(object):
 
 class Session(object):
 
-    def __init__(self, api_host, api_key):
+    def __init__(self, api_host, api_key, http_retries=5, http_delays=5, papi_retries=5, papi_delays=5):
         self.api_host = api_host
         self.api_key = api_key
+        self.http_retries = http_retries
+        self.http_delays = http_delays
+        self.papi_retries = papi_retries
+        self.papi_delays = papi_delays
 
     def fetch(self, url, params):
         page = Page("http://api.%s/%s/?application_id=%s&%s" % (self.api_host, url, self.api_key, params))
         count = 0
-        while count < NUM_RETRIES:
-            resp = json.loads(page.fetch())
+        while count < self.papi_retries:
+            resp = json.loads(page.fetch(retries=self.http_retries, delays=self.http_delays))
             if resp['status'] == 'ok':
                 return resp['data']
             count += 1
             logging.info("### PAPI retry %d %s" % (count, page.url))
-            time.sleep(DELAY_SECONDS)
+            time.sleep(self.papi_delays)
 
         raise Error(repr(resp))
 
@@ -101,9 +102,9 @@ class Session(object):
         page = Page("http://api.%s/%s/?application_id=%s&%s" % (self.api_host, 'wot/clan/provinces', self.api_key, 'clan_id=%d' % clan_id))
         count = 0
 
-        while count < NUM_RETRIES:
+        while count < self.papi_retries:
 
-            r = json.loads(page.fetch())
+            r = json.loads(page.fetch(retries=self.http_retries, delays=self.http_delays))
             if r['status'] == 'ok':
                 return False
             elif (r['status'] == 'error') and (r['error']['code'] == 404) and (r['error']['message'] == 'CLAN_NOT_FOUND'):
@@ -111,7 +112,7 @@ class Session(object):
 
             count += 1
             logging.info("### PAPI retry %d %s" % (count, page.url))
-            time.sleep(DELAY_SECONDS)
+            time.sleep(self.papi_delays)
 
         return False
 
