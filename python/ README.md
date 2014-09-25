@@ -15,6 +15,16 @@
 
 **hello_serb.py** - пример использования модуля _papi.py_
 
+**Пример реализации авторизации через Wargaming OpenID на своем сайте.** Python, Django, Google App Engine.
+
+[Действующий пример](http://openid-gae.appspot.com/)
+
+[Код примера](https://github.com/vb64/gae-openid)
+
+[Поясняющая статья](http://blog.vitaly-bogomolov.ru/2014/09/openid-wargamingnet-django.html)
+
+Публиковал код не тут, т.к. осваивал технологию PushToDeploy, предоставленную gihub и GoogleAppEngine. Там требуется отдельный репозитарий с админскими правами.
+
 **replay.py** - обработка файлов .wotreplay.
 
 Использование:
